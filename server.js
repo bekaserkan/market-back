@@ -47,14 +47,18 @@ app.get("/list/:id", (req, res) => {
 });
 
 app.post("/post", upload.single("image"), (req, res) => {
+  // Проверяем, был ли файл загружен
+  const imageFileName = req.file ? req.file.filename : null;
+
+  // Создаем новую задачу, включая имя файла изображения (или null, если файл не был загружен)
   const newTask = {
     ...req.body,
-    image: req.image ? req.image.filename : null,
+    image: imageFileName,
   };
 
-  tasks.push(newTask);
+  tasks.push(newTask); // Добавляем новую задачу в массив задач
 
-  res.json({ message: "Успешно добавлено" });
+  res.json({ message: "Успешно добавлено" }); // Отправляем ответ клиенту
 });
 
 app.get("/favorite/", (req, res) => {
