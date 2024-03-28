@@ -39,7 +39,7 @@ app.get("/list/:id", (req, res) => {
 app.post("/post", upload.single("image"), (req, res) => {
   const newTask = req.body;
   if (req.file) {
-    newTask.image = req.file.filename;
+    newTask.image = `https://market-back-bx.onrender.com/uploads/${req.file.filename}`;
   }
   tasks.push(newTask);
   res.json({ message: "Успешно добавлено" });
