@@ -37,7 +37,7 @@ let tasks = [];
 app.get("/list", (req, res) => {
   const tasksWithImageUrls = tasks.map((task) => {
     const imageUrl = task.image
-      ? `http://localhost:${PORT}/uploads/${task.image}`
+      ? `https://market-back-bx.onrender.com/uploads/${task.image}`
       : null;
 
     return {
