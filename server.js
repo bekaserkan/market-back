@@ -23,7 +23,18 @@ const upload = multer({ storage: storage });
 let tasks = [];
 
 app.get("/list", (req, res) => {
-  res.json(tasks);
+  const tasksWithImageUrls = tasks.map((task) => {
+    if (task.image) {
+      return {
+        ...task,
+        image: `https://market-back-bx.onrender.com/${task.image}`,
+      };
+    } else {
+      return task;
+    }
+  });
+
+  res.json(tasksWithImageUrls);
 });
 
 app.get("/list/:id", (req, res) => {
@@ -39,7 +50,7 @@ app.get("/list/:id", (req, res) => {
 app.post("/post", upload.single("image"), (req, res) => {
   const newTask = req.body;
   if (req.file) {
-    newTask.image = `https://market-back-bx.onrender.com/uploads/${req.file.filename}`;
+    newTask.image = req.file.filename;
   }
   tasks.push(newTask);
   res.json({ message: "Успешно добавлено" });
