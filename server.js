@@ -47,11 +47,13 @@ app.get("/list/:id", (req, res) => {
 });
 
 app.post("/post", upload.single("image"), (req, res) => {
-  const newTask = req.body;
-  if (req.file) {
-    newTask.image = req.file.filename;
-  }
+  const newTask = {
+    ...req.body,
+    image: req.image ? req.image.filename : null,
+  };
+
   tasks.push(newTask);
+
   res.json({ message: "Успешно добавлено" });
 });
 
