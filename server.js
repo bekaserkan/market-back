@@ -42,7 +42,7 @@ app.get("/list", (req, res) => {
   const tasksWithImageUrls = tasks.map((task) => {
     const imageUrl = task.image
       ? `https://market-back-bx.onrender.com/uploads/${task.image}`
-      : null;
+      : "error";
 
     return {
       ...task,
