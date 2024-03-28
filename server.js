@@ -9,7 +9,6 @@ const PORT = 3001;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Конфигурация multer для сохранения файлов
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/"); // Указываем папку для сохранения файлов
@@ -24,14 +23,14 @@ let tasks = [];
 
 app.get("/list", (req, res) => {
   const tasksWithImageUrls = tasks.map((task) => {
-    if (task.image) {
-      return {
-        ...task,
-        image: `https://market-back-bx.onrender.com/${task.image}`,
-      };
-    } else {
-      return task;
-    }
+    const imageUrl = task.file
+      ? `https://market-back-bx.onrender.com/uploads/${task.file.filename}`
+      : null;
+
+    return {
+      ...task,
+      image: imageUrl,
+    };
   });
 
   res.json(tasksWithImageUrls);
