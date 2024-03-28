@@ -2,29 +2,46 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const multer = require("multer");
+const fs = require("fs");
 
 const app = express();
 const PORT = 3001;
+const UPLOADS_DIR = "uploads/";
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use("/uploads", express.static("uploads"));
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Указываем папку для сохранения файлов
+    cb(null, UPLOADS_DIR);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname); // Генерируем уникальное имя для файла
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
 const upload = multer({ storage: storage });
 
 let tasks = [];
 
+// Функция для очистки папки uploads
+function clearUploadsFolder() {
+  fs.readdir(UPLOADS_DIR, (err, files) => {
+    if (err) throw err;
+
+    for (const file of files) {
+      fs.unlinkSync(`${UPLOADS_DIR}${file}`);
+    }
+  });
+}
+
+// Очищаем папку uploads при запуске сервера
+clearUploadsFolder();
+
 app.get("/list", (req, res) => {
   const tasksWithImageUrls = tasks.map((task) => {
-    const imageUrl = task.file
-      ? `https://market-back-bx.onrender.com/uploads/${task.file.filename}`
+    const imageUrl = task.image
+      ? `https://market-back-bx.onrender.com/uploads/${task.image}`
       : null;
 
     return {
@@ -47,31 +64,29 @@ app.get("/list/:id", (req, res) => {
 });
 
 app.post("/post", upload.single("image"), (req, res) => {
-  // Проверяем, был ли файл загружен
-  const imageFileName = req.file ? req.file.filename : null;
+  const imageFileName = req.file ? req.file.filename : "beka";
 
-  // Создаем новую задачу, включая имя файла изображения (или null, если файл не был загружен)
   const newTask = {
     ...req.body,
     image: imageFileName,
   };
 
-  tasks.push(newTask); // Добавляем новую задачу в массив задач
+  tasks.push(newTask);
 
-  res.json({ message: "Успешно добавлено" }); // Отправляем ответ клиенту
+  res.json({ message: "Успешно добавлено" });
 });
 
-app.get("/favorite/", (req, res) => {
-  const array = tasks.filter((obj) => {
-    return obj.favorite == true;
-  });
-  res.json(array);
+app.get("/favorite", (req, res) => {
+  const favoriteTasks = tasks.filter((task) => task.favorite === true);
+  res.json(favoriteTasks);
 });
 
 app.put("/favorite/:id", (req, res) => {
   const taskId = req.params.id;
   const updatedTask = req.body;
-  tasks = tasks.map((task) => (task.id === taskId ? updatedTask : task));
+  tasks = tasks.map((task) =>
+    task.id === taskId ? { ...task, ...updatedTask } : task
+  );
   res.json(tasks);
 });
 
