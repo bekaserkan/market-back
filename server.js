@@ -1,12 +1,24 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
 const PORT = 3001;
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// Конфигурация multer для сохранения файлов
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Указываем папку для сохранения файлов
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname); // Генерируем уникальное имя для файла
+  },
+});
+const upload = multer({ storage: storage });
 
 let tasks = [];
 
@@ -24,8 +36,11 @@ app.get("/list/:id", (req, res) => {
   }
 });
 
-app.post("/post", (req, res) => {
+app.post("/post", upload.single("image"), (req, res) => {
   const newTask = req.body;
+  if (req.file) {
+    newTask.image = req.file.filename;
+  }
   tasks.push(newTask);
   res.json({ message: "Успешно добавлено" });
 });
