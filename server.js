@@ -8,6 +8,16 @@ const app = express();
 const PORT = 3001;
 const UPLOADS_DIR = "uploads/";
 
+// Функция для создания папки uploads, если её нет
+function createUploadsFolder() {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR);
+  }
+}
+
+// Создаем папку uploads при старте сервера, если она не существует
+createUploadsFolder();
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
@@ -24,25 +34,11 @@ const upload = multer({ storage: storage });
 
 let tasks = [];
 
-// Функция для очистки папки uploads
-function clearUploadsFolder() {
-  fs.readdir(UPLOADS_DIR, (err, files) => {
-    if (err) throw err;
-
-    for (const file of files) {
-      fs.unlinkSync(`${UPLOADS_DIR}${file}`);
-    }
-  });
-}
-
-// Очищаем папку uploads при запуске сервера
-clearUploadsFolder();
-
 app.get("/list", (req, res) => {
   const tasksWithImageUrls = tasks.map((task) => {
     const imageUrl = task.image
-      ? `https://market-back-bx.onrender.com/uploads/${task.image}`
-      : "error";
+      ? `http://localhost:${PORT}/uploads/${task.image}`
+      : null;
 
     return {
       ...task,
